@@ -1,3 +1,5 @@
+import 'package:background_sms/background_sms.dart';
+
 class Sms {
   int id;
   String message;
@@ -8,15 +10,14 @@ class Sms {
   int smsType;
   DateTime createdAt;
 
-  Sms(
-      {required this.id,
-      required this.message,
-      required this.androidDeviceId,
-      required this.to,
-      required this.batchId,
-      required this.initiatedTime,
-      required this.smsType,
-      required this.createdAt});
+  Sms({required this.id,
+    required this.message,
+    required this.androidDeviceId,
+    required this.to,
+    required this.batchId,
+    required this.initiatedTime,
+    required this.smsType,
+    required this.createdAt});
 
   //Create fromJson function
   factory Sms.fromJson(Map<String, dynamic> json) {
@@ -30,5 +31,22 @@ class Sms {
       smsType: json['sms_type'],
       createdAt: DateTime.parse(json['created_at']),
     );
+  }
+
+  static sendSms(String message, List<String> recipients) async {
+    try {
+      for(var to in recipients){
+        var result = await BackgroundSms.sendMessage(
+            phoneNumber: to, message: message);
+        if (result == SmsStatus.sent) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    } catch (e) {
+      print(e);
+      return false;
+    }
   }
 }

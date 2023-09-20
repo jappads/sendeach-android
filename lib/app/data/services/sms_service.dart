@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:ja/app/data/models/sms.dart';
 import 'package:ja/app/data/services/auth_service.dart';
 import 'package:ja/app/data/services/device_info_service.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -50,69 +51,57 @@ class SMSService extends GetxService {
       messageController.text,
       _onSent,
       _onDelivered,
-      deleteAfterSent: Get
-          .find<PrefService>()
-          .deleteAfterSent
-          .value,
+      0,
+      deleteAfterSent: Get.find<PrefService>().deleteAfterSent.value,
       onLastSmsDeleted: _onLastSmsDeleted,
     );
   }
 
-  //This is the old version os sendSms function, which use to extract sms details from the notification payload and then send it.
-  //In the new version the notification payload will not have any details, but mobile app should call the API to fetch the pending SMS.
-  //And then send it.
-  // Future sendSms(RemoteMessage remoteMessage) async {
-  //   await init();
-  //   var data = remoteMessage.data;
-  //   var recipients = List<String>.from(jsonDecode(data['recipients']) ?? []);
-  //   var message = data['message'] ?? "";
-  //   var smsId = int.parse(data['id'].toString());
-  //   await saveSmsId(smsId);
-  //   await Get.putAsync(() => PrefService().init());
-  //   SmsSender().sendSms(
-  //     recipients,
-  //     message,
-  //     _onSent,
-  //     _onDelivered,
-  //     deleteAfterSent: Get
-  //         .find<PrefService>()
-  //         .deleteAfterSent
-  //         .value,
-  //     onLastSmsDeleted: _onLastSmsDeleted,
-  //   );
-  // }
   Future sendSms(RemoteMessage remoteMessage) async {
     await init();
     var data = await Get.find<SmsRepository>().getPendingSms();
-    for(final sms in data){
-      await saveSmsId(sms.id);
-      await Get.putAsync(() => PrefService().init());
-      await SmsSender().sendSms(
-        sms.to,
-        sms.message,
-        _onSent,
-        _onDelivered,
-        deleteAfterSent: Get
-            .find<PrefService>()
-            .deleteAfterSent
-            .value,
-        onLastSmsDeleted: _onLastSmsDeleted,
-      );
+
+    while (data.isNotEmpty) {
+      for (final sms in data) {
+        await saveSmsId(sms.id);
+        await Get.putAsync(() => PrefService().init());
+        await SmsSender().sendSms(
+          sms.to,
+          sms.message,
+          _onSent,
+          _onDelivered,
+          sms.id,
+          deleteAfterSent: Get.find<PrefService>().deleteAfterSent.value,
+          onLastSmsDeleted: _onLastSmsDeleted,
+        );
+      }
+
+      data = await Get.find<SmsRepository>().getPendingSms();
     }
   }
 
-  Future _onSent(bool success) async {
-    var smsId = readSmsId();
-    if (smsId != null) {
-      await Get.find<SmsRepository>().updateStatus(smsId, SmsStatus.sent);
+  Future _onSent(String arguments) async {
+    // var smsId = readSmsId();
+    // No need to update Processing Status as sms is automatically updated to processing when it is pulled
+    var arg = jsonDecode(arguments);
+    var success = arg['success'];
+    var smsId = arg['smsId'];
+
+    if (smsId != 0 && !success) {
+      await Get.find<SmsRepository>().updateStatus(
+          smsId, success ? SmsStatus.sent : SmsStatus.failed);
     }
     Fluttertoast.showToast(msg: "Sms sent");
   }
 
-  Future _onDelivered(bool success) async {
-    var smsId = readSmsId();
+  Future _onDelivered(String arguments) async {
+    // var smsId = readSmsId();
+    var arg = jsonDecode(arguments);
+    var success = arg['success'];
+    var smsId = arg['smsId'];
+
     if (smsId != null) {
-      await Get.find<SmsRepository>().updateStatus(smsId, SmsStatus.delivered);
+      await Get.find<SmsRepository>().updateStatus(smsId, success ? SmsStatus.delivered: SmsStatus.failed);
     }
     Fluttertoast.showToast(msg: "Sms Delivered");
   }

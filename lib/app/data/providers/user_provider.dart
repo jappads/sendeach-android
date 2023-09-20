@@ -33,11 +33,13 @@ class UserProvider extends GetConnect {
   }
 
   Future<String?> sendOtpToWhatsappNumber({required String phoneNumber}) async {
+
     Response response = await post(
       "/login",
       jsonEncode({"phone": phoneNumber}),
       contentType: "application/json",
     );
+
     if (response.body['status'] == true) {
       var token = response.body['data']['token'];
       return token;

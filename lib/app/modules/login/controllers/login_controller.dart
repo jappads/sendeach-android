@@ -15,6 +15,7 @@ class LoginController extends GetxController with StateMixin<bool>{
   }
 
   void login() async {
+
     try {
       Get.find<UserRepository>().loginWithWhatsappNumber(
         phoneNumber: phoneNumberController.text,
@@ -30,20 +31,25 @@ class LoginController extends GetxController with StateMixin<bool>{
   void newLogin() async {
     try {
       change(true);
+
       var token = await Get.find<UserRepository>()
           .sendOtpToWhatsappNumber(phoneNumber: phoneNumberController.text);
       change(false);
+
       if (token != null) {
         Get.toNamed(Routes.OTP, arguments: {
           "token": token,
           "phoneNumber": phoneNumberController.text,
         });
+      }else{
+        Fluttertoast.showToast(msg: 'Unable to connect to server: ${const String.fromEnvironment('host')}');
       }
     } catch (e) {
       change(false);
       if (e is String) {
         Fluttertoast.showToast(msg: e);
       }
+      print(e);
 
     }
   }

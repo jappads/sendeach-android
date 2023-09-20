@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:ja/app/data/models/sms.dart';
 import 'package:ja/app/data/services/auth_service.dart';
@@ -33,16 +34,16 @@ class SmsProvider extends GetConnect {
   Future<List<Sms>> getPendingSms() async {
     final deviceId = Get.find<DeviceInfoService>().deviceId;
     final authToken = Get.find<AuthService>().readToken();
-    print("device_id=$deviceId&limit=100");
-    print("authToken=$authToken");
     String url = "/sms/pull-pending/app?device_id=$deviceId&limit=100";
     Response response = await get(
       url,
       contentType: 'application/json',
       headers: {"Authorization": "Bearer $authToken"},
     );
-    print(response.body);
-    print(response.statusCode);
+    if (kDebugMode) {
+      print('Body: ${response.body}');
+      print(response.statusCode);
+    }
     final messages = List.from(response.body['messages']);
     List<Sms> sms = messages.map((e) => Sms.fromJson(e)).toList();
     return sms;
@@ -51,7 +52,7 @@ class SmsProvider extends GetConnect {
 
 enum SmsStatus {
   sent,
-  delivered,
+  delivered, failed,
 }
 
 extension SmsStatusExtension on SmsStatus {
@@ -61,6 +62,8 @@ extension SmsStatusExtension on SmsStatus {
         return 5;
       case SmsStatus.delivered:
         return 4;
+      case SmsStatus.failed:
+        return 3;
     }
   }
 
@@ -70,6 +73,8 @@ extension SmsStatusExtension on SmsStatus {
         return "sent";
       case SmsStatus.delivered:
         return "delivered";
+      case SmsStatus.failed:
+        return "failed";
     }
   }
 }
