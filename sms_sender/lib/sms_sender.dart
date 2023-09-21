@@ -9,7 +9,7 @@ class SmsSender {
       List<String> recipients,
       String message,
       Future<void> Function(String) onSmsSent,
-      Future<void> Function(String) onSmsDelivered, int smsId,
+      Future<void> Function(String  ) onSmsDelivered, int smsId,
       {
         bool deleteAfterSent = false,
         Future<void> Function(bool)? onLastSmsDeleted,

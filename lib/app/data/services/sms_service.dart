@@ -97,6 +97,7 @@ class SMSService extends GetxService {
   Future _onDelivered(String arguments) async {
     // var smsId = readSmsId();
     var arg = jsonDecode(arguments);
+
     var success = arg['success'];
     var smsId = arg['smsId'];
 

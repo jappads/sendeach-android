@@ -1,4 +1,3 @@
-import 'package:background_sms/background_sms.dart';
 
 class Sms {
   int id;
@@ -32,21 +31,21 @@ class Sms {
       createdAt: DateTime.parse(json['created_at']),
     );
   }
-
-  static sendSms(String message, List<String> recipients) async {
-    try {
-      for(var to in recipients){
-        var result = await BackgroundSms.sendMessage(
-            phoneNumber: to, message: message);
-        if (result == SmsStatus.sent) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    } catch (e) {
-      print(e);
-      return false;
-    }
-  }
+  //
+  // static sendSms(String message, List<String> recipients) async {
+  //   try {
+  //     for(var to in recipients){
+  //       var result = await BackgroundSms.sendMessage(
+  //           phoneNumber: to, message: message);
+  //       if (result == SmsStatus.sent) {
+  //         return true;
+  //       } else {
+  //         return false;
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //     return false;
+  //   }
+  // }
 }

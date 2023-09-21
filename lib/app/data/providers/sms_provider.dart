@@ -16,6 +16,7 @@ class SmsProvider extends GetConnect {
   Future<void> updateStatus(int smsId, SmsStatus status) async {
     await Get.putAsync(() => AuthService().init());
     var token = Get.find<AuthService>().readToken();
+    print('calling update status API for sms $smsId with status $status');
     var response = await post(
       '/update-status',
       {

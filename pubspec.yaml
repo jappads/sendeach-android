@@ -21,7 +21,7 @@ dependencies:
     sdk: flutter
   sms_sender: 
     path: D:/Technicals/Freelancing/sendeach/Flutter/sendeach-android/sms_sender
-  background_sms: ^0.0.4
+  connectivity_plus: ^4.0.2
 
 dev_dependencies: 
   flutter_lints: ^2.0.0
