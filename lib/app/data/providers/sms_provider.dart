@@ -35,7 +35,7 @@ class SmsProvider extends GetConnect {
   Future<List<Sms>> getPendingSms() async {
     final deviceId = Get.find<DeviceInfoService>().deviceId;
     final authToken = Get.find<AuthService>().readToken();
-    String url = "/sms/pull-pending/app?device_id=$deviceId&limit=100";
+    String url = "/sms/pull-pending/app?device_id=$deviceId&limit=10";
     Response response = await get(
       url,
       contentType: 'application/json',
